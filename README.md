@@ -7,8 +7,6 @@ A read-only [Model Context Protocol](https://modelcontextprotocol.io) server ove
 - *Which Harborview matters had the most time in Q3, by month?*
 - *Who are the responsible timekeepers on 10482-007, and what's its fee schedule?*
 
-It started in the Pre-Bills project but is separate from it. Pre-Bills is the structured monthly review workflow. This server is for ad hoc questions that don't fit a fixed screen. It doesn't use Pre-Bills, and it never changes anything in Juris.
-
 What's known and assumed about the Juris Web API, and the open questions, are in [docs/juris-web-api.md](docs/juris-web-api.md).
 
 ## Status
@@ -204,7 +202,7 @@ Don't work around a certificate error by turning off TLS verification (`NODE_TLS
 
 ## Configuration
 
-These are the same variable names the Pre-Bills backend uses, so one set of values works for both. The extension's settings form fills in the ones in its column ([`manifest.json`](manifest.json)). A setting left blank in the form counts as not set.
+The extension's settings form fills in the ones in its column ([`manifest.json`](manifest.json)). A setting left blank in the form counts as not set.
 
 | Variable | Extension setting | Default | Purpose |
 |---|---|---|---|
@@ -254,12 +252,18 @@ npm run inspect        # MCP Inspector UI (set the JURIS_API_* variables in its 
 | `scripts/pack.ts`, `scripts/check-bundle.ts` | Building and checking the `.mcpb` |
 | `.github/workflows/` | `ci.yml` (all checks, on Ubuntu and Windows), `release.yml` (build and publish the extension) |
 
-**Keeping in step with Pre-Bills.** The Pre-Bills backend reads the same API with the same assumptions: `$skip` paging (A4), the `datetime'…'` date literal (A5), the date part of `EntryDate` being the work date (A6), the placeholder time filter (A2, A3), and matter numbers written as `<client code>-<matter code>`. `mock/` is a copy of Pre-Bills' `backend/mock/juris-api/`, with its data frozen into `data.json`; the smoke test's figures depend on that data. When testing against a real Juris answers a question or corrects a field name, update [docs/juris-web-api.md](docs/juris-web-api.md), the code here, and Pre-Bills.
+**Keeping in step with Pre-Bills.** The [Pre-Bills](https://github.com/meido-ai/pre-bill) backend reads the same API with the same assumptions: `$skip` paging (A4), the `datetime'…'` date literal (A5), the date part of `EntryDate` being the work date (A6), the placeholder time filter (A2, A3), and matter numbers written as `<client code>-<matter code>`. `mock/` is a copy of Pre-Bills' `backend/mock/juris-api/`, with its data frozen into `data.json`; the smoke test's figures depend on that data. When testing against a real Juris answers a question or corrects a field name, update [docs/juris-web-api.md](docs/juris-web-api.md), the code here, and Pre-Bills.
 
 ## Releasing
 
-1. `npm version patch` (or `minor`, `major`). This bumps `package.json` and creates a `vX.Y.Z` tag.
-2. `git push --follow-tags`.
+**A release is made only by pushing a version tag** (`vX.Y.Z`). Pushing commits to `main`, or merging a pull request, runs CI but never publishes a release. The tag must match the `version` in `package.json` (tag `v0.2.0` for version `0.2.0`), or the workflow stops with an error.
+
+1. `npm version patch` (or `minor`, `major`). This bumps `package.json`, commits it and creates the matching `vX.Y.Z` tag.
+2. `git push --follow-tags`. This pushes the commit and the tag; the tag starts the release.
+
+To release the version already in `package.json` without bumping it (e.g. the first release, `0.1.0`), tag it by hand: `git tag v0.1.0 && git push origin v0.1.0`.
+
+To rebuild a release that already exists, for example after setting the default or signing variables, open **Actions → Release → Run workflow** and enter its tag. That re-uploads the files to the existing release. It only works for a tag that has already been pushed.
 
 The [release workflow](.github/workflows/release.yml) then runs all the checks, builds and checks the extension, and publishes a GitHub release with `juris-mcp-X.Y.Z.mcpb` and a stable-named copy, `juris-mcp.mcpb`, so `…/releases/latest/download/juris-mcp.mcpb` always gets the newest one.
 

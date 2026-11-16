@@ -1,6 +1,7 @@
 name: Release
 
-# Push a version tag to publish the Claude Desktop extension as a GitHub release:
+# Runs ONLY when a version tag (vX.Y.Z) is pushed, or by hand for an existing tag. Pushes to main and
+# pull requests never publish a release. The tag must match package.json's version. To publish:
 #   npm version patch      # or minor / major: bumps package.json and creates the tag
 #   git push --follow-tags
 #
