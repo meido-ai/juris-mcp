@@ -202,7 +202,7 @@ Don't work around a certificate error by turning off TLS verification (`NODE_TLS
 
 ## Configuration
 
-The extension's settings form fills in the ones in its column ([`manifest.json`](manifest.json)). A setting left blank in the form counts as not set.
+The extension's settings form fills in the variables that have an entry in the *Extension setting* column ([`manifest.json`](manifest.json)). A setting left blank in the form counts as not set.
 
 | Variable | Extension setting | Default | Purpose |
 |---|---|---|---|
