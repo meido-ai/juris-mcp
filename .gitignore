@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output: dist/ (compiled server), build/ (staged bundle and .mcpb files)
+dist/
+build/
+*.mcpb
+*.tsbuildinfo
+
+# Secrets: signing certificates and keys, local environment files
+*.pem
+*.key
+*.p12
+*.pfx
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

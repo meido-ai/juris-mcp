@@ -1,0 +1,107 @@
+name: Release
+
+# Push a version tag to publish the Claude Desktop extension as a GitHub release:
+#   npm version patch      # or minor / major: bumps package.json and creates the tag
+#   git push --follow-tags
+#
+# Repository variables (Settings > Secrets and variables > Actions > Variables) pre-fill the settings form,
+# so users only type their user name and password. They end up readable inside the .mcpb, so set only
+# what's fine for anyone who can download the release to see:
+#   JURIS_MCP_DEFAULT_URL, JURIS_MCP_DEFAULT_COMPANY, JURIS_MCP_DEFAULT_TIME_FILTER, JURIS_MCP_DEFAULT_PERSON_TYPES
+#
+# Signing (optional; without it Claude Desktop shows the extension as unsigned). Secrets:
+#   MCPB_SIGNING_CERT_PEM, MCPB_SIGNING_KEY_PEM, and MCPB_SIGNING_INTERMEDIATES_PEM if the CA needs it.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)build and publish, e.g. v0.2.0
+        required: true
+
+permissions:
+  contents: write # create the release
+
+concurrency:
+  group: release-${{ github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Tag matches package.json
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::Tag $TAG doesn't match package.json version $version. Use npm version to make the tag."
+            exit 1
+          fi
+
+      - name: Checks
+        run: |
+          npm run typecheck
+          npm run check:auth
+          npm run smoke
+
+      - name: Signing certificate
+        env:
+          CERT: ${{ secrets.MCPB_SIGNING_CERT_PEM }}
+          KEY: ${{ secrets.MCPB_SIGNING_KEY_PEM }}
+          INTERMEDIATES: ${{ secrets.MCPB_SIGNING_INTERMEDIATES_PEM }}
+        run: |
+          if [ -n "$CERT" ] && [ -n "$KEY" ]; then
+            umask 077
+            printf '%s\n' "$CERT" > "$RUNNER_TEMP/cert.pem"
+            printf '%s\n' "$KEY" > "$RUNNER_TEMP/key.pem"
+            echo "MCPB_SIGNING_CERT=$RUNNER_TEMP/cert.pem" >> "$GITHUB_ENV"
+            echo "MCPB_SIGNING_KEY=$RUNNER_TEMP/key.pem" >> "$GITHUB_ENV"
+            if [ -n "$INTERMEDIATES" ]; then
+              printf '%s\n' "$INTERMEDIATES" > "$RUNNER_TEMP/intermediates.pem"
+              echo "MCPB_SIGNING_INTERMEDIATES=$RUNNER_TEMP/intermediates.pem" >> "$GITHUB_ENV"
+            fi
+          else
+            echo "No signing certificate configured: the extension will be unsigned."
+          fi
+
+      - name: Build the extension
+        env:
+          JURIS_MCP_VERSION: ${{ env.TAG }}
+          JURIS_MCP_DEFAULT_URL: ${{ vars.JURIS_MCP_DEFAULT_URL }}
+          JURIS_MCP_DEFAULT_COMPANY: ${{ vars.JURIS_MCP_DEFAULT_COMPANY }}
+          JURIS_MCP_DEFAULT_TIME_FILTER: ${{ vars.JURIS_MCP_DEFAULT_TIME_FILTER }}
+          JURIS_MCP_DEFAULT_PERSON_TYPES: ${{ vars.JURIS_MCP_DEFAULT_PERSON_TYPES }}
+        run: npm run pack
+
+      - name: Check the extension
+        run: npm run check:bundle
+
+      - name: Remove signing files
+        if: always()
+        run: rm -f "$RUNNER_TEMP"/*.pem
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          file="build/juris-mcp-${TAG#v}.mcpb"
+          cp "$file" build/juris-mcp.mcpb   # stable name, so .../releases/latest/download/juris-mcp.mcpb always works
+          notes="Download **juris-mcp.mcpb** and open it: Claude Desktop shows an install dialog, then asks for your Juris user name and password. See the README for help."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$file" build/juris-mcp.mcpb --clobber
+          else
+            gh release create "$TAG" "$file" build/juris-mcp.mcpb --title "Juris for Claude Desktop $TAG" --notes "$notes"
+          fi

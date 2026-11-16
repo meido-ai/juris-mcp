@@ -1,0 +1,96 @@
+{
+  "manifest_version": "0.3",
+  "name": "juris",
+  "display_name": "Juris (read-only)",
+  "version": "0.0.0",
+  "description": "Ask Claude about clients, matters and time in Juris. Read-only: it never changes anything in Juris.",
+  "long_description": "Connects Claude Desktop to your firm's Juris Web API so you can ask questions such as \"why did billed time on the Delgado matter go up last month?\". Claude can look up clients, matters and timekeepers, list and total time entries, and compare two periods. It only reads: it can't create, change or delete anything in Juris.\n\nYou need to be on the office network or VPN. Your Juris password is stored by Claude Desktop and sent only to your firm's Juris server.",
+  "author": {
+    "name": "Juris MCP maintainers"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "JURIS_API_URL": "${user_config.juris_url}",
+        "JURIS_API_COMPANY": "${user_config.company}",
+        "JURIS_API_USER": "${user_config.user}",
+        "JURIS_API_PASSWORD": "${user_config.password}",
+        "JURIS_API_TIME_FILTER": "${user_config.time_filter}",
+        "JURIS_API_PERSON_TYPES": "${user_config.person_types}",
+        "NODE_EXTRA_CA_CERTS": "${user_config.ca_cert}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "juris_status", "description": "Check the connection to Juris and show the settings in use" },
+    { "name": "find_clients", "description": "Find clients by number or name" },
+    { "name": "get_client", "description": "A client's details, billing contact and matters" },
+    { "name": "find_matters", "description": "Find a client's matters" },
+    { "name": "get_matter", "description": "A matter's details and responsible timekeepers" },
+    { "name": "find_timekeepers", "description": "Find timekeepers by initials or name" },
+    { "name": "list_billing_codes", "description": "Practice classes, activity codes and task codes" },
+    { "name": "list_time_entries", "description": "Time entries for a client or matter in a period" },
+    { "name": "summarize_time", "description": "Hours and amounts for a client or matter, grouped by timekeeper, code or month" },
+    { "name": "compare_periods", "description": "Compare two periods and explain what changed" }
+  ],
+  "keywords": ["juris", "legal", "billing", "time entries"],
+  "compatibility": {
+    "platforms": ["darwin", "win32"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "user_config": {
+    "juris_url": {
+      "type": "string",
+      "title": "Juris Web API address",
+      "description": "Your firm's Juris Web API address, starting with https://. Ask IT if it isn't filled in.",
+      "required": true
+    },
+    "company": {
+      "type": "string",
+      "title": "Company code",
+      "description": "Only if your firm has more than one Juris database. Ask IT; otherwise leave blank.",
+      "required": false,
+      "default": ""
+    },
+    "user": {
+      "type": "string",
+      "title": "Juris user name",
+      "description": "Your Juris user name, without the company code.",
+      "required": true
+    },
+    "password": {
+      "type": "string",
+      "title": "Juris password",
+      "description": "Your Juris password. If it's wrong, the extension stops after one try so your Juris account isn't locked; fix it here, then turn the extension off and on.",
+      "sensitive": true,
+      "required": true
+    },
+    "ca_cert": {
+      "type": "file",
+      "title": "Firm certificate (if IT gives you one)",
+      "description": "Only if IT says Juris uses the firm's own certificate: the .pem file they give you. Otherwise leave blank.",
+      "required": false,
+      "default": ""
+    },
+    "time_filter": {
+      "type": "string",
+      "title": "Unbilled time filter (IT only)",
+      "description": "Advanced. Which Juris time counts as unbilled, as a Web API $filter. Leave blank for the built-in default.",
+      "required": false,
+      "default": ""
+    },
+    "person_types": {
+      "type": "string",
+      "title": "Person type labels (IT only)",
+      "description": "Advanced. Labels for Juris person type codes, e.g. P=Partner,A=Associate,PL=Paralegal.",
+      "required": false,
+      "default": ""
+    }
+  }
+}
