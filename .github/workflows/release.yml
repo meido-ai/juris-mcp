@@ -100,9 +100,12 @@ jobs:
         run: |
           file="build/juris-mcp-${TAG#v}.mcpb"
           cp "$file" build/juris-mcp.mcpb   # stable name, so .../releases/latest/download/juris-mcp.mcpb always works
+          # Install instructions first, then notes GitHub generates from the pull requests merged since the
+          # previous release, sorted into sections by label (see .github/release.yml).
           notes="Download **juris-mcp.mcpb** and open it: Claude Desktop shows an install dialog, then asks for your Juris user name and password. See the README for help."
           if gh release view "$TAG" >/dev/null 2>&1; then
+            # Rebuild of an existing release: replace the files, keep its notes (they may have been edited).
             gh release upload "$TAG" "$file" build/juris-mcp.mcpb --clobber
           else
-            gh release create "$TAG" "$file" build/juris-mcp.mcpb --title "Juris for Claude Desktop $TAG" --notes "$notes"
+            gh release create "$TAG" "$file" build/juris-mcp.mcpb --title "Juris for Claude Desktop $TAG" --notes "$notes" --generate-notes
           fi

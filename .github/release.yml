@@ -1,0 +1,26 @@
+# How GitHub sorts generated release notes (the release workflow's --generate-notes, or the
+# "Generate release notes" button). Not a workflow: GitHub reads this file by this exact name.
+#
+# Notes list the pull requests merged since the previous release, so changes pushed straight to main
+# don't appear (only in the "Full Changelog" link). Label a PR to put it in a section; Dependabot labels
+# its PRs "dependencies" itself. Label a PR "skip-release-notes" to leave it out.
+changelog:
+  exclude:
+    labels:
+      - skip-release-notes
+  categories:
+    - title: New features
+      labels:
+        - enhancement
+    - title: Fixes
+      labels:
+        - bug
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Dependencies
+      labels:
+        - dependencies
+    - title: Other changes
+      labels:
+        - "*"
