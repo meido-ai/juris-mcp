@@ -7,7 +7,7 @@ A read-only [Model Context Protocol](https://modelcontextprotocol.io) server ove
 - *Which Harborview matters had the most time in Q3, by month?*
 - *Who are the responsible timekeepers on 10482-007, and what's its fee schedule?*
 
-What's known and assumed about the Juris Web API, and the open questions, are in [docs/juris-web-api.md](docs/juris-web-api.md).
+What's known and assumed about the Juris Web API, and the open questions, are in [docs/juris-web-api.md](docs/juris-web-api.md). The checklist for the first test against a real Juris is in [docs/first-juris-test.md](docs/first-juris-test.md).
 
 ## Status
 
@@ -284,10 +284,14 @@ Defaults are readable by anyone who has the `.mcpb` (it's a zip). Never put a pa
 
 ## Next steps
 
-- **Check against a real Juris.** Do this once the questions above are answered. Then compare `summarize_time` totals with Juris's own reports for a closed month.
+- **Check against a real Juris,** following [docs/first-juris-test.md](docs/first-juris-test.md). It answers A1–A6 and A11, and compares `summarize_time` totals with Juris's own report for a closed month.
 - **Install it in Claude Desktop on Windows and macOS,** and check three things: the password lands in Credential Manager or Keychain, the *Firm certificate* setting works with the built-in Node, and a wrong password stops after one try.
 - **Decide on distribution:** repository visibility, who hands out the file, and a signing certificate ([Distribution](#distribution)).
 - **Add an icon** (`icon.png`, 512×512, picked up by `npm run pack`).
 - **Add a `draft_time_entry` tool** using `POST /api/TimeEntries`, for requests like *"log 0.3 for the call with opposing counsel on 10482-007."* The API only creates drafts, which a person then submits in JurisSuite, so the risk is low. It should still be its own opt-in tool, separate from the read-only ones.
 - **Add rates from fee schedules** (`/api/FeeSchedules?deepLoad=true`) to answer "is this the standard rate?" questions.
 - **Ask the firm about Juris logins** (M2): whether they're separate from Windows accounts, the lockout policy, and whether each user can get read-only API rights.
+
+## License
+
+[MIT](LICENSE). Copyright (c) 2026 meido-ai.

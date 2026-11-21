@@ -2,6 +2,7 @@
   "name": "juris-mcp",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Read-only MCP server over the Juris Web API, for Claude Desktop and other MCP clients",
   "engines": {
     "node": ">=22"

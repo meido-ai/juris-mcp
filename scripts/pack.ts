@@ -43,7 +43,7 @@ runNpm(["run", "build"]);
 rmSync(stage, { recursive: true, force: true });
 mkdirSync(stage, { recursive: true });
 cpSync(join(root, "dist"), join(stage, "dist"), { recursive: true });
-for (const f of ["package.json", "package-lock.json", "README.md"]) cpSync(join(root, f), join(stage, f));
+for (const f of ["package.json", "package-lock.json", "README.md", "LICENSE"]) cpSync(join(root, f), join(stage, f));
 if (existsSync(join(root, "icon.png"))) cpSync(join(root, "icon.png"), join(stage, "icon.png"));
 runNpm(["ci", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"], stage);
 

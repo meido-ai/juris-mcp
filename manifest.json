@@ -37,6 +37,7 @@
     { "name": "summarize_time", "description": "Hours and amounts for a client or matter, grouped by timekeeper, code or month" },
     { "name": "compare_periods", "description": "Compare two periods and explain what changed" }
   ],
+  "license": "MIT",
   "keywords": ["juris", "legal", "billing", "time entries"],
   "compatibility": {
     "platforms": ["darwin", "win32"],
